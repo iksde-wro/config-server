@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-server
+  labels:
+    app.kubernetes.io/name: config-server
+    app.kubernetes.io/instance: config-server-instance
+    app.kubernetes.io/version: 1.16.0
+spec:
+  replicas: {{ .Values.config_server.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: config-server
+      app.kubernetes.io/instance: config-server-instance
+  template:
+    metadata:
+      annotations:
+        {{ .Values.config_server.podAnnotations }}
+      labels:
+        app.kubernetes.io/name: config-server
+        app.kubernetes.io/instance: config-server-instance
+    spec:
+      containers:
+        - name: config-server-container
+          image: {{ .Values.config_server.image.repository }}
+          env:
+            - name: URI
+              value: {{ .Values.config_server.env.git.uri }}
+            - name: CLONE_ON_START
+              value: {{ .Values.config_server.env.git.clone-on-start }}
+            - name: DEFAULT_LABEL
+              value: {{ .Values.config_server.env.git.default-label }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8888
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-server-service
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: config-server
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8888
+      targetPort: 8888

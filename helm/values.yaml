@@ -1,0 +1,12 @@
+config_server:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: iksdewro/config-server:0.0.2
+  env:
+    git:
+      uri: http://wro-gitea/root/config
+      clone-on-start: true
+      default-label: main
+  service:
+    nodePort: 30088
